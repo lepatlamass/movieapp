@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:background="@color/colorPrimary"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context=".DetailActivity"
+    tools:showIn="@layout/activity_detail">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/title"
+                android:textColor="@color/colorAccent"
+                android:textSize="@dimen/movie_title_detail_size"
+                android:padding="10dp"
+                android:textStyle="bold"
+                android:layout_marginTop="@dimen/margin_top"
+                android:layout_marginLeft="@dimen/movie_detail_margin_left"
+                />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/overview"
+                android:text="@string/movie_detail"
+                android:textColor="@color/colorAccent"
+                android:layout_marginLeft="@dimen/movie_detail_margin_left"
+                android:layout_marginTop="@dimen/card_margin_top_title"
+                android:textAlignment="inherit"
+                android:textStyle="bold"
+                android:textSize="@dimen/movie_secondary_title"
+                android:layout_below="@+id/title"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/overviewText"
+                android:textColor="@color/colorText"
+                android:textSize="@dimen/movie_simple_text"
+                android:padding="10dp"
+                android:layout_marginTop="@dimen/card_margin_top_title"
+                android:layout_marginLeft="@dimen/movie_detail_margin_left"
+                android:layout_below="@+id/overview"
+                />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/rating"
+                android:textColor="@color/colorAccent"
+                android:text="@string/rating"
+                android:layout_marginLeft="@dimen/movie_detail_margin_left"
+                android:layout_marginTop="@dimen/card_margin_top_title"
+                android:textAlignment="inherit"
+                android:textStyle="bold"
+                android:textSize="@dimen/movie_secondary_title"
+                android:layout_below="@+id/overviewText"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/userText"
+                android:textColor="@color/colorPrimaryDark"
+                android:textSize="@dimen/movie_score_size"
+                android:padding="10dp"
+                android:layout_marginTop="@dimen/card_margin_top_title"
+                android:layout_marginLeft="@dimen/movie_detail_margin_left"
+                android:layout_below="@+id/rating"
+                />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/release"
+                android:textColor="@color/colorAccent"
+                android:text="@string/release"
+                android:layout_marginLeft="@dimen/movie_detail_margin_left"
+                android:layout_marginTop="@dimen/card_margin_top_title"
+                android:textAlignment="inherit"
+                android:textStyle="bold"
+                android:textSize="@dimen/movie_secondary_title"
+                android:layout_below="@+id/userText"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/releaseDate"
+                android:textSize="@dimen/movie_release_size"
+                android:padding="10dp"
+                android:layout_marginTop="@dimen/card_margin_top_title"
+                android:layout_marginLeft="@dimen/movie_detail_margin_left"
+                android:layout_below="@+id/release"
+                android:textColor="@color/colorText"
+                />
+
+
+        </LinearLayout>
+    </ScrollView>
+
+</RelativeLayout>
