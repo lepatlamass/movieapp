@@ -47,6 +47,13 @@ public class TrailerAdapter extends RecyclerView.Adapter<TrailerAdapter.MyViewHo
     public int getItemCount() {
         return trailerList == null ? 0 : trailerList.size();
     }
+  
+    // instanciate a new ArrayList then add all trailers items in
+    public void setItems(List<Trailer> items) {
+        trailerList = new ArrayList<>();
+        this.trailerList.addAll(items);
+        notifyDataSetChanged();
+    }
 
     public class MyViewHolder extends RecyclerView.ViewHolder{
         public TextView title;
