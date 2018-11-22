@@ -137,8 +137,10 @@ public class DetailActivity extends AppCompatActivity{
                     List<Trailer> trailer = null;
                     if (response.body() != null) {
                         trailer = response.body().getResults();
+                        adapter.setItems(trailers);
                     }
-                    recyclerView.setAdapter(new TrailerAdapter(getApplicationContext(), trailer));
+                    adapter = new TrailerAdapter(getApplicationContext(), trailer);
+                    recyclerView.setAdapter(adapter);
                     recyclerView.smoothScrollToPosition(0);
                 }
 
