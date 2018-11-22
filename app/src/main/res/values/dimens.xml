@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <dimen name="margin_top">40dp</dimen>
+    <dimen name="margin_top">10dp</dimen>
     <dimen name="movie_detail_image_height">292dp</dimen>
     <dimen name="card_margin_top_title">10dp</dimen>
     <dimen name="card_cover_height">153dp</dimen>

@@ -11,4 +11,5 @@
     <string name="most_pop">Most Popular</string>
     <string name="highest_rating">Highest Rated</string>
     <string name="chose_sort_order">Choose an order to sort</string>
+    <string name="trailer">Trailer</string>
 </resources>

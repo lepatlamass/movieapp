@@ -28,9 +28,8 @@ dependencies {
     implementation 'com.squareup.retrofit2:retrofit:2.4.0'
     implementation 'com.squareup.retrofit2:converter-gson:2.4.0'
 
-    //picaso libries
-    implementation 'com.squareup.picasso:picasso:2.5.2'
-
+//   mplementation 'com.squareup.picasso:picasso:2.5.2'
+//    //picaso libries
     //glide
     implementation ("com.github.bumptech.glide:glide:4.8.0") {
         exclude group: "com.android.support"

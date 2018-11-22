@@ -5,17 +5,36 @@ import android.os.Bundle;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.support.v7.widget.Toolbar;
 import com.bumptech.glide.Glide;
+import com.movieapp.konwo.movieap.adapter.TrailerAdapter;
+import com.movieapp.konwo.movieap.api.Client;
+import com.movieapp.konwo.movieap.api.Service;
 import com.movieapp.konwo.movieap.model.Movie;
+import com.movieapp.konwo.movieap.model.Trailer;
+import com.movieapp.konwo.movieap.model.TrailerResponse;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 
 public class DetailActivity extends AppCompatActivity{
     TextView movieOfName, plotSynopsis, userRating, releaseDate;
     ImageView imageView;
+
+    private RecyclerView recyclerView;
+    private TrailerAdapter adapter;
+    private List<Trailer> trailerList;
 
     Movie movie = null;
 
@@ -55,6 +74,8 @@ public class DetailActivity extends AppCompatActivity{
         } else {
             Toast.makeText(this, "NO API DATA", Toast.LENGTH_SHORT).show();
         }
+
+        initViews();
     }
 
     private void initCollapsingToolbar() {
@@ -82,4 +103,57 @@ public class DetailActivity extends AppCompatActivity{
             }
         });
     }
+
+    private void initViews() {
+        trailerList = new ArrayList<>();
+        adapter = new TrailerAdapter(this, trailerList);
+
+
+        recyclerView = findViewById(R.id.recycler_view1);
+        RecyclerView.LayoutManager aLayoutManager = new LinearLayoutManager(getApplicationContext());
+        recyclerView.setLayoutManager(aLayoutManager);
+        recyclerView.setAdapter(adapter);
+        adapter.notifyDataSetChanged();
+
+        loadJSON();
+
+    }
+
+    private void loadJSON() {
+        int movie_id = getIntent().getExtras().getInt("id");
+
+        try{
+            if (BuildConfig.THE_MOVIE_DB_API_TOKEN.isEmpty()) {
+                Toast.makeText(getApplicationContext(),"Please obtain your API Key from themoviedb.org", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            Client Client = new Client();
+            Service apiService = Client.getClient().create(Service.class);
+            Call<TrailerResponse> call = apiService.getMovieTrailer(movie_id, BuildConfig.THE_MOVIE_DB_API_TOKEN);
+            call.enqueue(new Callback<TrailerResponse>() {
+                @Override
+                public void onResponse(Call<TrailerResponse> call, Response<TrailerResponse> response) {
+                    List<Trailer> trailer = null;
+                    if (response.body() != null) {
+                        trailer = response.body().getResults();
+                    }
+                    recyclerView.setAdapter(new TrailerAdapter(getApplicationContext(), trailer));
+                    recyclerView.smoothScrollToPosition(0);
+                }
+
+                @Override
+                public void onFailure(Call<TrailerResponse> call, Throwable t) {
+                    Log.d("Error", t.getMessage());
+                    Toast.makeText(DetailActivity.this, "Error fetching trailer data", Toast.LENGTH_SHORT).show();
+                }
+            });
+
+        }catch (Exception e) {
+            Log.d("Error", e.getMessage());
+            Toast.makeText(this, e.toString(), Toast.LENGTH_SHORT).show();
+        }
+
+    }
+
 }

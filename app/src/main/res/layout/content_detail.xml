@@ -9,14 +9,21 @@
     tools:context=".DetailActivity"
     tools:showIn="@layout/activity_detail">
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/ad">
+
+
+
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        tools:showIn="@layout/activity_detail">
 
-        <LinearLayout
+        <android.support.constraint.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
+            android:layout_height="wrap_content">
 
             <TextView
                 android:layout_width="match_parent"
@@ -28,6 +35,10 @@
                 android:textStyle="bold"
                 android:layout_marginTop="@dimen/margin_top"
                 android:layout_marginLeft="@dimen/movie_detail_margin_left"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintBottom_toTopOf="parent"
+                tools:layout_constraintTop_creator="1"
+                tools:layout_constraintLeft_creator="1"
                 />
 
             <TextView
@@ -41,7 +52,10 @@
                 android:textAlignment="inherit"
                 android:textStyle="bold"
                 android:textSize="@dimen/movie_secondary_title"
-                android:layout_below="@+id/title"/>
+                app:layout_constraintBottom_toTopOf="@+id/title"
+                app:layout_constraintLeft_toLeftOf="parent"
+                tools:layout_constraintLeft_creator="1"
+                />
 
             <TextView
                 android:layout_width="match_parent"
@@ -52,7 +66,9 @@
                 android:padding="10dp"
                 android:layout_marginTop="@dimen/card_margin_top_title"
                 android:layout_marginLeft="@dimen/movie_detail_margin_left"
-                android:layout_below="@+id/overview"
+                app:layout_constraintBottom_toTopOf="@+id/overview"
+                app:layout_constraintLeft_toLeftOf="parent"
+
                 />
 
             <TextView
@@ -66,7 +82,10 @@
                 android:textAlignment="inherit"
                 android:textStyle="bold"
                 android:textSize="@dimen/movie_secondary_title"
-                android:layout_below="@+id/overviewText"/>
+                app:layout_constraintBottom_toTopOf="@+id/overviewText"
+                app:layout_constraintLeft_toLeftOf="parent"
+
+                />
 
             <TextView
                 android:layout_width="match_parent"
@@ -77,7 +96,9 @@
                 android:padding="10dp"
                 android:layout_marginTop="@dimen/card_margin_top_title"
                 android:layout_marginLeft="@dimen/movie_detail_margin_left"
-                android:layout_below="@+id/rating"
+                app:layout_constraintBottom_toTopOf="@+id/rating"
+                app:layout_constraintLeft_toLeftOf="parent"
+
                 />
 
             <TextView
@@ -91,7 +112,10 @@
                 android:textAlignment="inherit"
                 android:textStyle="bold"
                 android:textSize="@dimen/movie_secondary_title"
-                android:layout_below="@+id/userText"/>
+                app:layout_constraintBottom_toTopOf="@+id/userText"
+                app:layout_constraintLeft_toLeftOf="parent"
+
+                />
 
             <TextView
                 android:layout_width="match_parent"
@@ -101,12 +125,45 @@
                 android:padding="10dp"
                 android:layout_marginTop="@dimen/card_margin_top_title"
                 android:layout_marginLeft="@dimen/movie_detail_margin_left"
-                android:layout_below="@+id/release"
                 android:textColor="@color/colorText"
+                app:layout_constraintBottom_toTopOf="@+id/release"
+                app:layout_constraintLeft_toLeftOf="parent"
                 />
 
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/thumbnailUrl"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/releaseDate"
+                android:visibility="invisible"/>
 
-        </LinearLayout>
+            <TextView
+                android:id="@+id/trailer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="16sp"
+                android:text="@string/trailer"
+                android:layout_marginTop="@dimen/card_margin_top_title"
+                android:layout_marginLeft="@dimen/movie_detail_margin_left"
+                app:layout_constraintBottom_toBottomOf="@+id/releaseDate"
+                app:layout_constraintLeft_toLeftOf="parent"/>
+
+            <android.support.v7.widget.RecyclerView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/recycler_view1"
+                android:clipToPadding="false"
+                android:scrollbars="vertical"
+                app:layout_constraintTop_toBottomOf="@+id/trailer"
+                app:layout_constraintLeft_toLeftOf="parent">
+
+            </android.support.v7.widget.RecyclerView>
+
+
+        </android.support.constraint.ConstraintLayout>
     </ScrollView>
+
+    </LinearLayout>
 
 </RelativeLayout>
