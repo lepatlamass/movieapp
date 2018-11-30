@@ -6,12 +6,11 @@ import java.util.List;
 
 public class TrailerResponse {
 
-
-
     @SerializedName("id")
     private int id_trailer;
+    // This method must be declared public in order to get the trailer response result
     @SerializedName("results")
-    private List<Trailer> results;
+    public List<Trailer> results;
 
     public void setId_trailer(int id_trailer) {
         this.id_trailer = id_trailer;
