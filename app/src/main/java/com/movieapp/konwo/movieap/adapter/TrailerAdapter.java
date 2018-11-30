@@ -14,6 +14,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 
+import com.bumptech.glide.Glide;
 import com.movieapp.konwo.movieap.R;
 import com.movieapp.konwo.movieap.model.Trailer;
 
@@ -26,21 +27,33 @@ public class TrailerAdapter extends RecyclerView.Adapter<TrailerAdapter.MyViewHo
     private Context mContext;
     private List<Trailer> trailerList;
 
+    public TrailerAdapter(Context mContext){
+        this.mContext = mContext;
+    }
+
     public TrailerAdapter(Context mContext, List<Trailer> trailerList){
         this.mContext = mContext;
         this.trailerList = trailerList;
     }
 
 
+    @NonNull
     @Override
-    public TrailerAdapter.MyViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
+    public TrailerAdapter.MyViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
         View view = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.trailer_card, viewGroup, false);
         return new MyViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(TrailerAdapter.MyViewHolder viewHolder, int i) {
+    public void onBindViewHolder(@NonNull TrailerAdapter.MyViewHolder viewHolder, int i) {
+        Trailer trailerItem = trailerList.get(i);
         viewHolder.title.setText(trailerList.get(i).getName());
+
+        Uri thumbnailUri = Uri.parse("https://img.youtube.com/vi/")
+                .buildUpon().appendPath(trailerItem.getKey()).appendPath("hqdefault.jpg").build();
+        Glide.with(mContext)
+                .load(thumbnailUri)
+                .into(viewHolder.thumbnail);
     }
 
     @Override
@@ -58,6 +71,7 @@ public class TrailerAdapter extends RecyclerView.Adapter<TrailerAdapter.MyViewHo
     public class MyViewHolder extends RecyclerView.ViewHolder{
         public TextView title;
         public ImageView thumbnail;
+
         public MyViewHolder(View view){
             super(view);
             title = view.findViewById(R.id.title);
