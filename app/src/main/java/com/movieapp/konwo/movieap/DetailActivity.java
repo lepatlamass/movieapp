@@ -29,14 +29,18 @@ import retrofit2.Response;
 
 
 public class DetailActivity extends AppCompatActivity{
+
+    // movie key from Parcelable value
+    private static final String MOVIE_KEY = "movie_key";
+    private static final String TAG = DetailActivity.class.getSimpleName();
+
     TextView movieOfName, plotSynopsis, userRating, releaseDate;
     ImageView imageView;
 
     private RecyclerView recyclerView;
     private TrailerAdapter adapter;
-    private List<Trailer> trailerList;
 
-    Movie movie = null;
+    private Movie movie;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -55,20 +59,20 @@ public class DetailActivity extends AppCompatActivity{
         userRating =  findViewById(R.id.userText);
         releaseDate = findViewById(R.id.releaseDate);
 
+        // get movie parcelable from intent
         Intent intentThatStartedThisActivity = getIntent();
+        movie = intentThatStartedThisActivity.getParcelableExtra(MOVIE_KEY);
+
         if (intentThatStartedThisActivity.hasExtra("original_title")){
 
+            movieOfName.setText(movie.getOriginalTitle());
+            plotSynopsis.setText(movie.getOverview());
 
-            movieOfName.setText(getIntent().getExtras().getString("original_title"));
-            plotSynopsis.setText(getIntent().getExtras().getString("overview"));
-
-            Double voteCount = getIntent().getExtras().getDouble("vote_average");
+            Double voteCount = movie.getVoteAverage();
             userRating.setText(String.valueOf(voteCount));
-            releaseDate.setText(getIntent().getExtras().getString("release_date"));
+            releaseDate.setText(movie.getReleaseDate());
 
-
-
-            Glide.with(this).load(getIntent().getExtras().getString("poster_path")).into(imageView);
+            Glide.with(this).load(movie.getPosterpath()).into(imageView);
 
 
         } else {
@@ -105,57 +109,41 @@ public class DetailActivity extends AppCompatActivity{
     }
 
     private void initViews() {
-        trailerList = new ArrayList<>();
-        adapter = new TrailerAdapter(this, trailerList);
-
-
         recyclerView = findViewById(R.id.recycler_view1);
-        RecyclerView.LayoutManager aLayoutManager = new LinearLayoutManager(getApplicationContext());
-        recyclerView.setLayoutManager(aLayoutManager);
-        recyclerView.setAdapter(adapter);
-        adapter.notifyDataSetChanged();
-
-        loadJSON();
-
+        // call to populateTrailers()
+        populateTrailers();
     }
 
-    private void loadJSON() {
-        int movie_id = getIntent().getExtras().getInt("id");
+    private void populateTrailers() {
+        // set the LayoutManager
+        LinearLayoutManager layoutManager =
+                new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL,false);
+        recyclerView.setLayoutManager(layoutManager);
+        recyclerView.setHasFixedSize(true);
+        recyclerView.setNestedScrollingEnabled(false);
 
-        try{
-            if (BuildConfig.THE_MOVIE_DB_API_TOKEN.isEmpty()) {
-                Toast.makeText(getApplicationContext(),"Please obtain your API Key from themoviedb.org", Toast.LENGTH_SHORT).show();
-                return;
+        adapter = new TrailerAdapter(this);
+        recyclerView.setAdapter(adapter);
+
+        // load movies
+        Service service = Client.getClient().create(Service.class);
+        Call<TrailerResponse> call =
+                service.getMovieTrailer(movie.getId(),BuildConfig.THE_MOVIE_DB_API_TOKEN);
+        call.enqueue(new Callback<TrailerResponse>() {
+            @Override
+            public void onResponse(Call<TrailerResponse> call, Response<TrailerResponse> response) {
+                if (response.isSuccessful()) {
+                    // TrailerResponse's results;
+                    List<Trailer> trailers = response.body().results;
+                    adapter.setItems(trailers);
+                }
             }
 
-            Client Client = new Client();
-            Service apiService = Client.getClient().create(Service.class);
-            Call<TrailerResponse> call = apiService.getMovieTrailer(movie_id, BuildConfig.THE_MOVIE_DB_API_TOKEN);
-            call.enqueue(new Callback<TrailerResponse>() {
-                @Override
-                public void onResponse(Call<TrailerResponse> call, Response<TrailerResponse> response) {
-                    List<Trailer> trailer = null;
-                    if (response.body() != null) {
-                        trailer = response.body().getResults();
-                        adapter.setItems(trailer);
-                    }
-                    adapter = new TrailerAdapter(getApplicationContext(), trailer);
-                    recyclerView.setAdapter(adapter);
-                    recyclerView.smoothScrollToPosition(0);
-                }
-
-                @Override
-                public void onFailure(Call<TrailerResponse> call, Throwable t) {
-                    Log.d("Error", t.getMessage());
-                    Toast.makeText(DetailActivity.this, "Error fetching trailer data", Toast.LENGTH_SHORT).show();
-                }
-            });
-
-        }catch (Exception e) {
-            Log.d("Error", e.getMessage());
-            Toast.makeText(this, e.toString(), Toast.LENGTH_SHORT).show();
-        }
-
+            @Override
+            public void onFailure(Call<TrailerResponse> call, Throwable t) {
+                Log.e(TAG, t.getMessage());
+            }
+        });
     }
 
 }
