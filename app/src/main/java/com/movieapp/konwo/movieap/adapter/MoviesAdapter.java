@@ -19,6 +19,7 @@ import java.util.List;
 
 public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MyViewHolder> {
 
+    private static final String MOVIE_KEY = "movie_key";
     private Context movieContext;
     private List<Movie> movieList;
 
@@ -64,11 +65,7 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MyViewHold
                     if (pos != RecyclerView.NO_POSITION){
                         Movie clickedDataItem = movieList.get(pos);
                         Intent intent = new Intent(movieContext, DetailActivity.class);
-                        intent.putExtra("original_title", movieList.get(pos).getOriginalTitle());
-                        intent.putExtra("poster_path", movieList.get(pos).getPosterpath());
-                        intent.putExtra("overview", movieList.get(pos).getOverview());
-                        intent.putExtra("vote_average", movieList.get(pos).getVoteAverage());
-                        intent.putExtra("release_date", movieList.get(pos).getReleaseDate());
+                        intent.putExtra(MOVIE_KEY,clickedDataItem);
                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         movieContext.startActivity(intent);
                         Toast.makeText(v.getContext(), "You clicked" + clickedDataItem.getOriginalLanguage(), Toast.LENGTH_SHORT).show();
@@ -78,5 +75,4 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MyViewHold
             });
         }
     }
-
 }
