@@ -12,6 +12,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.support.v7.widget.Toolbar;
+
 import com.bumptech.glide.Glide;
 import com.movieapp.konwo.movieap.adapter.TrailerAdapter;
 import com.movieapp.konwo.movieap.api.Client;
@@ -28,7 +29,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 
-public class DetailActivity extends AppCompatActivity{
+public class DetailActivity extends AppCompatActivity {
 
     // movie key from Parcelable value
     private static final String MOVIE_KEY = "movie_key";
@@ -46,7 +47,7 @@ public class DetailActivity extends AppCompatActivity{
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
-        Toolbar toolbar =  findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -54,30 +55,23 @@ public class DetailActivity extends AppCompatActivity{
         initCollapsingToolbar();
 
         imageView = findViewById(R.id.thumbnail_image_header);
-        movieOfName =  findViewById(R.id.title);
-        plotSynopsis =  findViewById(R.id.overviewText);
-        userRating =  findViewById(R.id.userText);
+        movieOfName = findViewById(R.id.title);
+        plotSynopsis = findViewById(R.id.overviewText);
+        userRating = findViewById(R.id.userText);
         releaseDate = findViewById(R.id.releaseDate);
 
         // get movie parcelable from intent
         Intent intentThatStartedThisActivity = getIntent();
         movie = intentThatStartedThisActivity.getParcelableExtra(MOVIE_KEY);
 
-        if (intentThatStartedThisActivity.hasExtra("original_title")){
+        movieOfName.setText(movie.getOriginalTitle());
+        plotSynopsis.setText(movie.getOverview());
 
-            movieOfName.setText(movie.getOriginalTitle());
-            plotSynopsis.setText(movie.getOverview());
+        Double voteCount = movie.getVoteAverage();
+        userRating.setText(String.valueOf(voteCount));
+        releaseDate.setText(movie.getReleaseDate());
 
-            Double voteCount = movie.getVoteAverage();
-            userRating.setText(String.valueOf(voteCount));
-            releaseDate.setText(movie.getReleaseDate());
-
-            Glide.with(this).load(movie.getPosterpath()).into(imageView);
-
-
-        } else {
-            Toast.makeText(this, "NO API DATA", Toast.LENGTH_SHORT).show();
-        }
+        Glide.with(this).load(movie.getPosterpath()).into(imageView);
 
         initViews();
     }
@@ -91,16 +85,17 @@ public class DetailActivity extends AppCompatActivity{
         appBarLayout.addOnOffsetChangedListener(new AppBarLayout.OnOffsetChangedListener() {
             boolean isShow = false;
             int scrollRange = -1;
+
             @Override
             public void onOffsetChanged(AppBarLayout appBarLayout, int verticalOffset) {
-                if (scrollRange == -1){
+                if (scrollRange == -1) {
                     scrollRange = appBarLayout.getTotalScrollRange();
                 }
 
-                if (scrollRange + verticalOffset == 0){
+                if (scrollRange + verticalOffset == 0) {
                     collapsingToolbarLayout.setTitle(getString(R.string.movie_detail));
-                    isShow=true;
-                } else if (isShow){
+                    isShow = true;
+                } else if (isShow) {
                     collapsingToolbarLayout.setTitle(" ");
                     isShow = false;
                 }
@@ -117,7 +112,7 @@ public class DetailActivity extends AppCompatActivity{
     private void populateTrailers() {
         // set the LayoutManager
         LinearLayoutManager layoutManager =
-                new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL,false);
+                new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setHasFixedSize(true);
         recyclerView.setNestedScrollingEnabled(false);
@@ -128,7 +123,7 @@ public class DetailActivity extends AppCompatActivity{
         // load movies
         Service service = Client.getClient().create(Service.class);
         Call<TrailerResponse> call =
-                service.getMovieTrailer(movie.getId(),BuildConfig.THE_MOVIE_DB_API_TOKEN);
+                service.getMovieTrailer(movie.getId(), BuildConfig.THE_MOVIE_DB_API_TOKEN);
         call.enqueue(new Callback<TrailerResponse>() {
             @Override
             public void onResponse(Call<TrailerResponse> call, Response<TrailerResponse> response) {
@@ -140,7 +135,7 @@ public class DetailActivity extends AppCompatActivity{
             }
 
             @Override
-            public void onFailure(Call<TrailerResponse> call, Throwable t) {
+            public void onFailure(Call<TrailerResponse> call, Throwable t) 
                 Log.e(TAG, t.getMessage());
             }
         });
