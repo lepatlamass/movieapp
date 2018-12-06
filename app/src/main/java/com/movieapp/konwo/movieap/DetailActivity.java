@@ -21,6 +21,7 @@ import com.github.ivbaranov.mfb.MaterialFavoriteButton;
 import com.movieapp.konwo.movieap.adapter.TrailerAdapter;
 import com.movieapp.konwo.movieap.api.Client;
 import com.movieapp.konwo.movieap.api.Service;
+import com.movieapp.konwo.movieap.data.MovieDatabase;
 import com.movieapp.konwo.movieap.data.FavoriteDbHelper;
 import com.movieapp.konwo.movieap.model.Movie;
 import com.movieapp.konwo.movieap.model.Trailer;
@@ -28,6 +29,7 @@ import com.movieapp.konwo.movieap.model.TrailerResponse;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executor;
 
 import butterknife.BindView;
 import butterknife.BindViews;
@@ -50,6 +52,9 @@ public class DetailActivity extends AppCompatActivity {
     private Movie movie;
     private FavoriteDbHelper favoriteDbHelper;
     private Movie favorite;
+    private MovieDatabase movieDb;
+    private Executor executor;
+    
     private final AppCompatActivity activity = DetailActivity.this;
 
     @Override
@@ -177,6 +182,16 @@ public class DetailActivity extends AppCompatActivity {
     }
 
     public void saveFavorite () {
+        // add a selected movie to favorite
+        executor.execute(new Runnable() { // running in separate thread
+            @Override
+            public void run() {
+                movieDb.movieDAO().insert(movie);
+            }
+        });
+        
+        /**
+        
         favoriteDbHelper = new FavoriteDbHelper(activity);
         favorite = new Movie();
         int movie_id = getIntent().getExtras().getInt("id");
@@ -190,7 +205,7 @@ public class DetailActivity extends AppCompatActivity {
         favorite.setVoteAverage(Double.parseDouble(rate));
         favorite.setOverview(plotSynopsis.getText().toString().trim());
 
-        favoriteDbHelper.addFavorite(favorite);
+        favoriteDbHelper.addFavorite(favorite); **/
     }
 
 }
