@@ -1,5 +1,7 @@
 package com.movieapp.konwo.movieap.model;
 
+import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.PrimaryKey;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -8,8 +10,10 @@ import com.google.gson.annotations.SerializedName;
 import java.util.ArrayList;
 import java.util.List;
 
+@Entity
 public class Movie implements Parcelable {
 
+    @PrimaryKey
     @SerializedName("id")
     private Integer id;
     @SerializedName("poster_path")
@@ -86,8 +90,6 @@ public class Movie implements Parcelable {
         }
         imageBaseUrl = in.readString();
     }
-
-    public Movie() {}
 
     public static final Creator<Movie> CREATOR = new Creator<Movie>() {
         @Override
