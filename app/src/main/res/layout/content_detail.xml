@@ -34,6 +34,25 @@
                 tools:layout_constraintLeft_creator="1"
                 android:layout_marginStart="@dimen/movie_detail_margin_left" />
 
+            <com.github.ivbaranov.mfb.MaterialFavoriteButton
+                android:id="@+id/favorite_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="10dp"
+                app:mfb_animate_favorite="true"
+                app:mfb_animate_unfavorite="false"
+                app:mfb_padding="12"
+                app:mfb_rotation_duration="400"
+                app:mfb_rotation_angle="360"
+                app:mfb_bounce_duration="300"
+                app:mfb_color="@color/colorAccent"
+                app:mfb_type="star"
+                app:mfb_size="52"
+                android:layout_marginLeft="@dimen/movie_detail_margin_left"
+                android:layout_marginTop="@dimen/card_margin_top_title"
+                app:layout_constraintTop_toBottomOf="@+id/title"/>
+
+
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -45,7 +64,7 @@
                 android:textAlignment="inherit"
                 android:textStyle="bold"
                 android:textSize="@dimen/movie_secondary_title"
-                app:layout_constraintTop_toBottomOf="@+id/title"
+                app:layout_constraintTop_toBottomOf="@+id/favorite_button"
                 app:layout_constraintLeft_toLeftOf="parent"
                 tools:layout_constraintLeft_creator="1"
                 android:layout_marginStart="@dimen/movie_detail_margin_left" />

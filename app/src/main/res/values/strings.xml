@@ -12,4 +12,5 @@
     <string name="highest_rating">Highest Rated</string>
     <string name="chose_sort_order">Choose an order to sort</string>
     <string name="trailer">Trailer</string>
+    <string name="favorite">Favorite Movies</string>
 </resources>

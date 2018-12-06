@@ -87,6 +87,8 @@ public class Movie implements Parcelable {
         imageBaseUrl = in.readString();
     }
 
+    public Movie() {}
+
     public static final Creator<Movie> CREATOR = new Creator<Movie>() {
         @Override
         public Movie createFromParcel(Parcel in) {
