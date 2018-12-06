@@ -13,7 +13,6 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 import android.support.v7.widget.Toolbar;
 
 import com.bumptech.glide.Glide;
@@ -22,17 +21,13 @@ import com.movieapp.konwo.movieap.adapter.TrailerAdapter;
 import com.movieapp.konwo.movieap.api.Client;
 import com.movieapp.konwo.movieap.api.Service;
 import com.movieapp.konwo.movieap.data.MovieDatabase;
-import com.movieapp.konwo.movieap.data.FavoriteDbHelper;
 import com.movieapp.konwo.movieap.model.Movie;
 import com.movieapp.konwo.movieap.model.Trailer;
 import com.movieapp.konwo.movieap.model.TrailerResponse;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executor;
 
-import butterknife.BindView;
-import butterknife.BindViews;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -50,8 +45,6 @@ public class DetailActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private TrailerAdapter adapter;
     private Movie movie;
-    private FavoriteDbHelper favoriteDbHelper;
-    private Movie favorite;
     private MovieDatabase movieDb;
     private Executor executor;
     
@@ -67,6 +60,9 @@ public class DetailActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         initCollapsingToolbar();
+
+        movieDb = MovieDatabase.getDatabase(this);
+        executor = new MovieExec();
 
         imageView = findViewById(R.id.thumbnail_image_header);
         movieOfName = findViewById(R.id.title);
@@ -97,15 +93,13 @@ public class DetailActivity extends AppCompatActivity {
                         if (favorite) {
                             SharedPreferences.Editor editor = getSharedPreferences(".DetailActivity", MODE_PRIVATE).edit();
                             editor.putBoolean("Favorite Added", true);
-                            editor.commit();
                             saveFavorite();
+                            editor.commit();
                             Snackbar.make(buttonView, "Added to favorite", Snackbar.LENGTH_SHORT).show();
                         } else {
-                            int movie_id = getIntent().getExtras().getInt("id");
-                            favoriteDbHelper = new FavoriteDbHelper(DetailActivity.this);
-                            favoriteDbHelper.deleFavorite(movie_id);
                             SharedPreferences.Editor editor = getSharedPreferences(".DetailActivity", MODE_PRIVATE).edit();
                             editor.putBoolean("Favorite Removed", true);
+                            removeFavorite();
                             editor.commit();
                             Snackbar.make(buttonView, "Removed from Favorite", Snackbar.LENGTH_SHORT).show();
                         }
@@ -206,6 +200,15 @@ public class DetailActivity extends AppCompatActivity {
         favorite.setOverview(plotSynopsis.getText().toString().trim());
 
         favoriteDbHelper.addFavorite(favorite); **/
+    }
+
+    private void removeFavorite() {
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                movieDb.movieDAO().delete(movie);
+            }
+        });
     }
 
 }
