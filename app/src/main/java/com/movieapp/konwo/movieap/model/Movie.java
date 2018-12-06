@@ -24,8 +24,8 @@ public class Movie implements Parcelable {
     private String overview;
     @SerializedName("release_date")
     private String releaseDate;
-    @SerializedName("genre_ids")
-    private List<Integer> genreIds = new ArrayList<Integer>();
+    //@SerializedName("genre_ids")
+    //private List<Integer> genreIds = new ArrayList<Integer>();
     @SerializedName("original_title")
     private String originalTitle;
     @SerializedName("original_language")
@@ -43,7 +43,7 @@ public class Movie implements Parcelable {
 
     //constructor for movie
     public Movie(Integer id, String posterpath, boolean adult, String overview,
-                 String releaseDate, List<Integer> genreIds, String originalTitle,
+                 String releaseDate, String originalTitle,
                  String originalLanguage, String title, String backDropPath, Integer voteCount,
                  boolean video, Double voteAverage) {
         this.id = id;
@@ -51,7 +51,7 @@ public class Movie implements Parcelable {
         this.adult = adult;
         this.overview = overview;
         this.releaseDate = releaseDate;
-        this.genreIds = genreIds;
+        //this.genreIds = genreIds;
         this.originalTitle = originalTitle;
         this.originalLanguage = originalLanguage;
         this.title = title;
@@ -60,8 +60,6 @@ public class Movie implements Parcelable {
         this.video = video;
         this.voteAverage = voteAverage;
     }
-
-    String imageBaseUrl = "https://image.tmdb.org/t/p/w500";
 
     protected Movie(Parcel in) {
         if (in.readByte() == 0) {
@@ -88,7 +86,7 @@ public class Movie implements Parcelable {
         } else {
             voteAverage = in.readDouble();
         }
-        imageBaseUrl = in.readString();
+        //imageBaseUrl = in.readString();
     }
 
     public static final Creator<Movie> CREATOR = new Creator<Movie>() {
@@ -124,9 +122,6 @@ public class Movie implements Parcelable {
         return releaseDate;
     }
 
-    public List<Integer> getGenreIds() {
-        return genreIds;
-    }
 
     public String getOriginalTitle() {
         return originalTitle;
@@ -156,10 +151,6 @@ public class Movie implements Parcelable {
         return voteAverage;
     }
 
-    public String getImageBaseUrl() {
-        return imageBaseUrl;
-    }
-
     //generated setter
     public void setId(Integer id) {
         this.id = id;
@@ -179,10 +170,6 @@ public class Movie implements Parcelable {
 
     public void setReleaseDate(String releaseDate) {
         this.releaseDate = releaseDate;
-    }
-
-    public void setGenreIds(List<Integer> genreIds) {
-        this.genreIds = genreIds;
     }
 
     public void setOriginalTitle(String originalTitle) {
@@ -247,6 +234,5 @@ public class Movie implements Parcelable {
             dest.writeByte((byte) 1);
             dest.writeDouble(voteAverage);
         }
-        dest.writeString(imageBaseUrl);
     }
 }
