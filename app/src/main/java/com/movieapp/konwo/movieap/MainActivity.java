@@ -16,7 +16,6 @@ import android.os.Bundle;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.telecom.Call;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -25,7 +24,7 @@ import android.widget.Toast;
 import com.movieapp.konwo.movieap.adapter.MoviesAdapter;
 import com.movieapp.konwo.movieap.api.Client;
 import com.movieapp.konwo.movieap.api.Service;
-import com.movieapp.konwo.movieap.data.FavoriteDbHelper;
+import com.movieapp.konwo.movieap.data.MovieDatabase;
 import com.movieapp.konwo.movieap.model.Movie;
 import com.movieapp.konwo.movieap.model.MoviesResponse;
 
@@ -42,14 +41,19 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     private List<Movie> movieList;
     ProgressDialog progressDialog;
     private SwipeRefreshLayout swipeContainer;
-    private FavoriteDbHelper favoriteDbHelper;
     private AppCompatActivity activity = MainActivity.this;
     public static final String LOG_TAG = MoviesAdapter.class.getName();
+
+    private MovieDatabase movieDatabase;
+    private MovieExec executor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        movieDatabase = MovieDatabase.getDatabase(this);
+        executor = new MovieExec();
 
         initViews();
 
@@ -82,7 +86,6 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         recyclerView.setItemAnimator(new DefaultItemAnimator());
         recyclerView.setAdapter(adapter);
         adapter.notifyDataSetChanged();
-        favoriteDbHelper = new FavoriteDbHelper(activity);
 
         swipeContainer = findViewById(R.id.main_activity);
         swipeContainer.setColorSchemeColors(android.R.color.white);
@@ -113,7 +116,6 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         recyclerView.setItemAnimator(new DefaultItemAnimator());
         recyclerView.setAdapter(adapter);
         adapter.notifyDataSetChanged();
-        favoriteDbHelper = new FavoriteDbHelper(activity);
 
         getAllFavorite();
     }
@@ -273,19 +275,11 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
     @SuppressLint("StaticFieldLeak")
     private void getAllFavorite() {
-        new AsyncTask<Void, Void, Void>(){
-
+        executor.execute(new Runnable() {
             @Override
-            protected Void doInBackground(Void... voids) {
-                movieList.clear();
-                movieList.addAll(favoriteDbHelper.getAllFavorite());
-                return null;
+            public void run() {
+                movieDatabase.movieDAO().getAll();
             }
-            @Override
-            protected void onPostExecute(Void params) {
-                super.onPostExecute(params);
-                adapter.notifyDataSetChanged();
-            }
-        }.execute();
+        });
     }
 }
