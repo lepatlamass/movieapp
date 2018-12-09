@@ -47,7 +47,8 @@ public class DetailActivity extends AppCompatActivity {
     private Movie movie;
     private MovieDatabase movieDb;
     private Executor executor;
-    
+    private boolean isFavorite;
+
     private final AppCompatActivity activity = DetailActivity.this;
 
     @Override
@@ -83,25 +84,45 @@ public class DetailActivity extends AppCompatActivity {
 
         Glide.with(this).load(movie.getPosterpath()).into(imageView);
 
-        MaterialFavoriteButton materialFavoriteButton = findViewById(R.id.favorite_button);
+        final MaterialFavoriteButton materialFavoriteButton = findViewById(R.id.favorite_button);
+        materialFavoriteButton.setFavorite(false);
 
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        // check if movie is already in favorites
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                Movie movie1 = movieDb.movieDAO().getMovieById(movie.getId());
+                // if movi1 is null, movie is'nt in favorite
+                if (movie1 == null) {
+                    // set the button state to false
+                    materialFavoriteButton.setFavorite(false);
+                } else {
+                    // movie is already in favorite, set the button state to true
+                    materialFavoriteButton.setFavorite(true);
+                }
+            }
+        });
+
+        //SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         materialFavoriteButton.setOnFavoriteChangeListener(
                 new MaterialFavoriteButton.OnFavoriteChangeListener() {
                     @Override
                     public void onFavoriteChanged(MaterialFavoriteButton buttonView, boolean favorite) {
+                        // if movie is favorite
                         if (favorite) {
-                            SharedPreferences.Editor editor = getSharedPreferences(".DetailActivity", MODE_PRIVATE).edit();
-                            editor.putBoolean("Favorite Added", true);
+                            SharedPreferences.Editor editor =
+                                    getSharedPreferences(".DetailActivity", MODE_PRIVATE).edit();
                             saveFavorite();
-                            editor.commit();
-                            Snackbar.make(buttonView, "Added to favorite", Snackbar.LENGTH_SHORT).show();
+                            editor.putBoolean("Added to favorites", true);
+                            editor.apply();
+                            Snackbar.make(buttonView, "added to favorite", Snackbar.LENGTH_SHORT).show();
                         } else {
-                            SharedPreferences.Editor editor = getSharedPreferences(".DetailActivity", MODE_PRIVATE).edit();
-                            editor.putBoolean("Favorite Removed", true);
+                            SharedPreferences.Editor editor =
+                                    getSharedPreferences(".DetailActivity", MODE_PRIVATE).edit();
                             removeFavorite();
-                            editor.commit();
-                            Snackbar.make(buttonView, "Removed from Favorite", Snackbar.LENGTH_SHORT).show();
+                            editor.putBoolean("Removed from favorites", true);
+                            editor.apply();
+                            Snackbar.make(buttonView, "removed from Favorite", Snackbar.LENGTH_SHORT).show();
                         }
                     }
                 }
@@ -183,23 +204,6 @@ public class DetailActivity extends AppCompatActivity {
                 movieDb.movieDAO().insert(movie);
             }
         });
-        
-        /**
-        
-        favoriteDbHelper = new FavoriteDbHelper(activity);
-        favorite = new Movie();
-        int movie_id = getIntent().getExtras().getInt("id");
-        String rate = getIntent().getExtras().getString("vote_average");
-        String poster = getIntent().getExtras().getString("poster_path");
-
-
-        favorite.setId(movie_id);
-        favorite.setOriginalTitle(movieOfName.getText().toString().trim());
-        favorite.setPosterpath(poster);
-        favorite.setVoteAverage(Double.parseDouble(rate));
-        favorite.setOverview(plotSynopsis.getText().toString().trim());
-
-        favoriteDbHelper.addFavorite(favorite); **/
     }
 
     private void removeFavorite() {
