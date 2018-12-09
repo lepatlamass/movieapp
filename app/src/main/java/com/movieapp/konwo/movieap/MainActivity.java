@@ -3,13 +3,15 @@ package com.movieapp.konwo.movieap;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
-import android.os.AsyncTask;
 import android.preference.PreferenceManager;
+import android.support.annotation.Nullable;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -25,6 +27,7 @@ import com.movieapp.konwo.movieap.adapter.MoviesAdapter;
 import com.movieapp.konwo.movieap.api.Client;
 import com.movieapp.konwo.movieap.api.Service;
 import com.movieapp.konwo.movieap.data.MovieDatabase;
+import com.movieapp.konwo.movieap.data.MovieViewModel;
 import com.movieapp.konwo.movieap.model.Movie;
 import com.movieapp.konwo.movieap.model.MoviesResponse;
 
@@ -46,11 +49,15 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
     private MovieDatabase movieDatabase;
     private MovieExec executor;
+    private MovieViewModel viewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // get viewModel from ViewModelProviders class
+        viewModel = ViewModelProviders.of(this).get(MovieViewModel.class);
 
         movieDatabase = MovieDatabase.getDatabase(this);
         executor = new MovieExec();
@@ -101,7 +108,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
     }
 
-    private void initViews2(){
+    private void loadFavoritesMovies(){
         recyclerView = findViewById(R.id.recycler_view);
 
         movieList = new ArrayList<>();
@@ -120,7 +127,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         getAllFavorite();
     }
 
-    private void loadJSON(){
+    private void loadPopularMovies(){
 
         try{
             if (BuildConfig.THE_MOVIE_DB_API_TOKEN.isEmpty()) {
@@ -142,7 +149,6 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
                     if (swipeContainer.isRefreshing()) {
                         swipeContainer.setRefreshing(false);
                     }
-
                 }
 
                 @Override
@@ -169,7 +175,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
     }
 
-    private void loadJSON1(){
+    private void loadTopRatedMovies(){
 
         try{
             if (BuildConfig.THE_MOVIE_DB_API_TOKEN.isEmpty()) {
@@ -251,15 +257,15 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         );
         if (sortOrder.equals(this.getString(R.string.most_pop))){
             Log.d(LOG_TAG,  "Sorting by most populsr");
-            loadJSON();
+            loadPopularMovies();
         } else if
                 (sortOrder.equals(this.getString(R.string.favorite))){
             Log.d(LOG_TAG, "Sorting by favorite");
-            initViews2();
+            loadFavoritesMovies();
         }
         else {
             Log.d(LOG_TAG, "Sorting by vote average");
-            loadJSON1();
+            loadTopRatedMovies();
         }
     }
 
@@ -268,17 +274,16 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         super.onResume();
         if (movieList.isEmpty()){
             checkSortOder();
-        }else {
-
         }
     }
 
+    // load favorites by observing changes from the database
     @SuppressLint("StaticFieldLeak")
     private void getAllFavorite() {
-        executor.execute(new Runnable() {
+        viewModel.getAllMovies().observe(this, new Observer<List<Movie>>() {
             @Override
-            public void run() {
-                movieDatabase.movieDAO().getAll();
+            public void onChanged(@Nullable List<Movie> movies) {
+                recyclerView.setAdapter(new MoviesAdapter(getApplicationContext(), movies));
             }
         });
     }
