@@ -14,16 +14,21 @@ import android.util.Log;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.support.v7.widget.Toolbar;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.github.ivbaranov.mfb.MaterialFavoriteButton;
+import com.movieapp.konwo.movieap.adapter.ReviewAdapter;
 import com.movieapp.konwo.movieap.adapter.TrailerAdapter;
 import com.movieapp.konwo.movieap.api.Client;
 import com.movieapp.konwo.movieap.api.Service;
 import com.movieapp.konwo.movieap.data.MovieDatabase;
 import com.movieapp.konwo.movieap.model.Movie;
+import com.movieapp.konwo.movieap.model.Review;
+import com.movieapp.konwo.movieap.model.ReviewResults;
 import com.movieapp.konwo.movieap.model.Trailer;
 import com.movieapp.konwo.movieap.model.TrailerResponse;
+import com.takusemba.multisnaprecyclerview.MultiSnapRecyclerView;
 
 import java.util.List;
 import java.util.concurrent.Executor;
@@ -49,6 +54,8 @@ public class DetailActivity extends AppCompatActivity {
     private Executor executor;
     private boolean isFavorite;
 
+    int movie_id;
+
     private final AppCompatActivity activity = DetailActivity.this;
 
     @Override
@@ -60,7 +67,7 @@ public class DetailActivity extends AppCompatActivity {
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        initCollapsingToolbar();
+//        initCollapsingToolbar();
 
         movieDb = MovieDatabase.getDatabase(this);
         executor = new MovieExec();
@@ -78,11 +85,15 @@ public class DetailActivity extends AppCompatActivity {
         movieOfName.setText(movie.getOriginalTitle());
         plotSynopsis.setText(movie.getOverview());
 
+        String movieName = movie.getOriginalTitle();
+
         Double voteCount = movie.getVoteAverage();
         userRating.setText(String.valueOf(voteCount));
         releaseDate.setText(movie.getReleaseDate());
 
         Glide.with(this).load(movie.getPosterpath()).into(imageView);
+
+        ((CollapsingToolbarLayout) findViewById(R.id.collapsing_toolbar)).setTitle(movieName);
 
         final MaterialFavoriteButton materialFavoriteButton = findViewById(R.id.favorite_button);
         materialFavoriteButton.setFavorite(false);
@@ -131,37 +142,38 @@ public class DetailActivity extends AppCompatActivity {
         initViews();
     }
 
-    private void initCollapsingToolbar() {
-        final CollapsingToolbarLayout collapsingToolbarLayout = findViewById(R.id.collapsing_toolbar);
-        collapsingToolbarLayout.setTitle(" ");
-        AppBarLayout appBarLayout = findViewById(R.id.appbar);
-        appBarLayout.setExpanded(true);
-
-        appBarLayout.addOnOffsetChangedListener(new AppBarLayout.OnOffsetChangedListener() {
-            boolean isShow = false;
-            int scrollRange = -1;
-
-            @Override
-            public void onOffsetChanged(AppBarLayout appBarLayout, int verticalOffset) {
-                if (scrollRange == -1) {
-                    scrollRange = appBarLayout.getTotalScrollRange();
-                }
-
-                if (scrollRange + verticalOffset == 0) {
-                    collapsingToolbarLayout.setTitle(getString(R.string.movie_detail));
-                    isShow = true;
-                } else if (isShow) {
-                    collapsingToolbarLayout.setTitle(" ");
-                    isShow = false;
-                }
-            }
-        });
-    }
+//    private void initCollapsingToolbar() {
+//        final CollapsingToolbarLayout collapsingToolbarLayout = findViewById(R.id.collapsing_toolbar);
+//        collapsingToolbarLayout.setTitle(" ");
+//        AppBarLayout appBarLayout = findViewById(R.id.appbar);
+//        appBarLayout.setExpanded(true);
+//
+//        appBarLayout.addOnOffsetChangedListener(new AppBarLayout.OnOffsetChangedListener() {
+//            boolean isShow = false;
+//            int scrollRange = -1;
+//
+//            @Override
+//            public void onOffsetChanged(AppBarLayout appBarLayout, int verticalOffset) {
+//                if (scrollRange == -1) {
+//                    scrollRange = appBarLayout.getTotalScrollRange();
+//                }
+//
+//                if (scrollRange + verticalOffset == 0) {
+//                    collapsingToolbarLayout.setTitle(getString(R.string.movie_detail));
+//                    isShow = true;
+//                } else if (isShow) {
+//                    collapsingToolbarLayout.setTitle(" ");
+//                    isShow = false;
+//                }
+//            }
+//        });
+//    }
 
     private void initViews() {
         recyclerView = findViewById(R.id.recycler_view1);
         // call to populateTrailers()
         populateTrailers();
+        Review();
     }
 
     private void populateTrailers() {
@@ -194,6 +206,43 @@ public class DetailActivity extends AppCompatActivity {
                 Log.e(TAG, t.getMessage());
             }
         });
+    }
+
+    private void Review(){
+        try {
+            if (BuildConfig.THE_MOVIE_DB_API_TOKEN.isEmpty()){
+                Toast.makeText(getApplicationContext(), "Please get your API Key", Toast.LENGTH_SHORT).show();
+                return;
+            } else {
+                Client client = new Client();
+                Service apiService = Client.getClient().create(Service.class);
+                Call<Review> call = apiService.getReview(movie_id, BuildConfig.THE_MOVIE_DB_API_TOKEN);
+
+                call.enqueue(new Callback<Review>() {
+                    @Override
+                    public void onResponse(Call<Review> call, Response<Review> response) {
+                        if (response.isSuccessful()){
+                            if (response.body() != null) {
+                                List<ReviewResults> reviewResults = response.body().getResults();
+                                MultiSnapRecyclerView recyclerView2 = findViewById(R.id.review_recyclerview);
+                                LinearLayoutManager firstManager = new LinearLayoutManager(getApplicationContext(), LinearLayoutManager.VERTICAL, false);
+                                recyclerView2.setLayoutManager(firstManager);
+                                recyclerView2.setAdapter(new ReviewAdapter(getApplicationContext(), reviewResults));
+                                recyclerView2.smoothScrollToPosition(0);
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<Review> call, Throwable t) {
+
+                    }
+                });
+            }
+        } catch (Exception e) {
+            Log.d("Error", e.getMessage());
+            Toast.makeText(this, "unable to fetch data", Toast.LENGTH_SHORT).show();
+        }
     }
 
     public void saveFavorite () {

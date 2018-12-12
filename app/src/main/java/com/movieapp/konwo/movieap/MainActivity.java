@@ -197,7 +197,6 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
                     if (swipeContainer.isRefreshing()) {
                         swipeContainer.setRefreshing(false);
                     }
-                    progressDialog.dismiss();
                 }
 
                 @Override
