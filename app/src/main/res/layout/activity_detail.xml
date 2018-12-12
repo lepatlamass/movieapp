@@ -201,9 +201,13 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="16dp"
                 android:text="@string/review"
+                android:textColor="@color/colorAccent"
                 android:layout_below="@+id/recycler_view1"
+                android:layout_marginTop="@dimen/card_margin_top_title"
+                android:layout_marginLeft="@dimen/movie_detail_margin_left"
                 android:textStyle="bold"
-                android:textSize="16sp" />
+                android:textSize="16sp"
+                android:layout_marginStart="@dimen/movie_detail_margin_left" />
 
             <com.takusemba.multisnaprecyclerview.MultiSnapRecyclerView
                 android:id="@+id/review_recycler"
