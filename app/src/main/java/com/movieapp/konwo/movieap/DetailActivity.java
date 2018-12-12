@@ -47,7 +47,7 @@ public class DetailActivity extends AppCompatActivity {
     TextView movieOfName, plotSynopsis, userRating, releaseDate;
     ImageView imageView;
 
-    private RecyclerView recyclerView;
+    private MultiSnapRecyclerView recyclerView;
     private TrailerAdapter adapter;
     private Movie movie;
     private MovieDatabase movieDb;
@@ -224,7 +224,7 @@ public class DetailActivity extends AppCompatActivity {
                         if (response.isSuccessful()){
                             if (response.body() != null) {
                                 List<ReviewResults> reviewResults = response.body().getResults();
-                                MultiSnapRecyclerView recyclerView2 = findViewById(R.id.review_recyclerview);
+                                MultiSnapRecyclerView recyclerView2 = findViewById(R.id.review_recycler);
                                 LinearLayoutManager firstManager = new LinearLayoutManager(getApplicationContext(), LinearLayoutManager.VERTICAL, false);
                                 recyclerView2.setLayoutManager(firstManager);
                                 recyclerView2.setAdapter(new ReviewAdapter(getApplicationContext(), reviewResults));

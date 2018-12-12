@@ -21,6 +21,6 @@ public interface Service {
     Call<TrailerResponse> getMovieTrailer(@Path("id") int id, @Query("api_key") String apikey);
 
     @GET("movie/{movie_id}/reviews")
-    Call<Review> getReview(@Path("movie_id") int id, @Query("api_key") String apiKey);
+    Call<Review> getReview(@Path("movie_id") int id, @Query("api_key") String apikey);
 
 }
