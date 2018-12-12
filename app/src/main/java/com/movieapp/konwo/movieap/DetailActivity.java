@@ -3,13 +3,10 @@ package com.movieapp.konwo.movieap;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
-import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -24,8 +21,8 @@ import com.movieapp.konwo.movieap.api.Client;
 import com.movieapp.konwo.movieap.api.Service;
 import com.movieapp.konwo.movieap.data.MovieDatabase;
 import com.movieapp.konwo.movieap.model.Movie;
+import com.movieapp.konwo.movieap.model.ReviewResponse;
 import com.movieapp.konwo.movieap.model.Review;
-import com.movieapp.konwo.movieap.model.ReviewResults;
 import com.movieapp.konwo.movieap.model.Trailer;
 import com.movieapp.konwo.movieap.model.TrailerResponse;
 import com.takusemba.multisnaprecyclerview.MultiSnapRecyclerView;
@@ -48,13 +45,13 @@ public class DetailActivity extends AppCompatActivity {
     ImageView imageView;
 
     private MultiSnapRecyclerView recyclerView;
+    private MultiSnapRecyclerView reviewRecycler;
     private TrailerAdapter adapter;
     private Movie movie;
     private MovieDatabase movieDb;
     private Executor executor;
+    private ReviewAdapter reviewAdapter;
     private boolean isFavorite;
-
-    int movie_id;
 
     private final AppCompatActivity activity = DetailActivity.this;
 
@@ -171,9 +168,10 @@ public class DetailActivity extends AppCompatActivity {
 
     private void initViews() {
         recyclerView = findViewById(R.id.recycler_view1);
+        reviewRecycler = findViewById(R.id.review_recycler);
         // call to populateTrailers()
         populateTrailers();
-        Review();
+        populateReviews();
     }
 
     private void populateTrailers() {
@@ -208,7 +206,36 @@ public class DetailActivity extends AppCompatActivity {
         });
     }
 
-    private void Review(){
+    private void populateReviews() {
+        LinearLayoutManager layoutManager =
+                new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
+        reviewRecycler.setLayoutManager(layoutManager);
+        reviewRecycler.setHasFixedSize(true);
+        reviewRecycler.setNestedScrollingEnabled(false);
+
+        reviewAdapter = new ReviewAdapter(this);
+        reviewRecycler.setAdapter(reviewAdapter);
+
+        // load reviews
+        Service service = Client.getClient().create(Service.class);
+        Call<ReviewResponse> call = service.getReview(movie.getId(), BuildConfig.THE_MOVIE_DB_API_TOKEN);
+        call.enqueue(new Callback<ReviewResponse>() {
+            @Override
+            public void onResponse(Call<ReviewResponse> call, Response<ReviewResponse> response) {
+                if (response.isSuccessful()) {
+                    List<Review> reviews = response.body().results;
+                    reviewAdapter.setItems(reviews);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ReviewResponse> call, Throwable t) {
+
+            }
+        });
+    }
+
+    /** private void Review(){
         try {
             if (BuildConfig.THE_MOVIE_DB_API_TOKEN.isEmpty()){
                 Toast.makeText(getApplicationContext(), "Please get your API Key", Toast.LENGTH_SHORT).show();
@@ -216,14 +243,14 @@ public class DetailActivity extends AppCompatActivity {
             } else {
                 Client client = new Client();
                 Service apiService = Client.getClient().create(Service.class);
-                Call<Review> call = apiService.getReview(movie_id, BuildConfig.THE_MOVIE_DB_API_TOKEN);
+                Call<ReviewResponse> call = apiService.getReview(movie_id, BuildConfig.THE_MOVIE_DB_API_TOKEN);
 
-                call.enqueue(new Callback<Review>() {
+                call.enqueue(new Callback<ReviewResponse>() {
                     @Override
-                    public void onResponse(Call<Review> call, Response<Review> response) {
+                    public void onResponse(Call<ReviewResponse> call, Response<ReviewResponse> response) {
                         if (response.isSuccessful()){
                             if (response.body() != null) {
-                                List<ReviewResults> reviewResults = response.body().getResults();
+                                List<Review> reviewResults = response.body().getResults();
                                 MultiSnapRecyclerView recyclerView2 = findViewById(R.id.review_recycler);
                                 LinearLayoutManager firstManager = new LinearLayoutManager(getApplicationContext(), LinearLayoutManager.VERTICAL, false);
                                 recyclerView2.setLayoutManager(firstManager);
@@ -234,7 +261,7 @@ public class DetailActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onFailure(Call<Review> call, Throwable t) {
+                    public void onFailure(Call<ReviewResponse> call, Throwable t) {
 
                     }
                 });
@@ -243,7 +270,7 @@ public class DetailActivity extends AppCompatActivity {
             Log.d("Error", e.getMessage());
             Toast.makeText(this, "unable to fetch data", Toast.LENGTH_SHORT).show();
         }
-    }
+    } */
 
     public void saveFavorite () {
         // add a selected movie to favorite

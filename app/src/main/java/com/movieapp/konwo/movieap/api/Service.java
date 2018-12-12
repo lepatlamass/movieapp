@@ -1,7 +1,7 @@
 package com.movieapp.konwo.movieap.api;
 
 import com.movieapp.konwo.movieap.model.MoviesResponse;
-import com.movieapp.konwo.movieap.model.Review;
+import com.movieapp.konwo.movieap.model.ReviewResponse;
 import com.movieapp.konwo.movieap.model.TrailerResponse;
 
 import retrofit2.Call;
@@ -21,6 +21,6 @@ public interface Service {
     Call<TrailerResponse> getMovieTrailer(@Path("id") int id, @Query("api_key") String apikey);
 
     @GET("movie/{movie_id}/reviews")
-    Call<Review> getReview(@Path("movie_id") int id, @Query("api_key") String apikey);
+    Call<ReviewResponse> getReview(@Path("movie_id") int id, @Query("api_key") String apikey);
 
 }
