@@ -10,6 +10,7 @@ import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
+import android.os.Parcelable;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -37,7 +38,7 @@ import java.util.List;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class MainActivity extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener{
+public class MainActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;
     private MoviesAdapter adapter;
@@ -46,6 +47,11 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     private SwipeRefreshLayout swipeContainer;
     private AppCompatActivity activity = MainActivity.this;
     public static final String LOG_TAG = MoviesAdapter.class.getName();
+
+    private static String LIST_STATE = "list_state";
+    private Parcelable savedRecyclerLayoutState;
+    private static final String BUNDLE_RECYCLER_LAYOUT = "recycler_layout";
+    private ArrayList<Movie> moviesInstance = new ArrayList<>();
 
     private MovieDatabase movieDatabase;
     private MovieExec executor;
@@ -56,15 +62,21 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // get viewModel from ViewModelProviders class
-        viewModel = ViewModelProviders.of(this).get(MovieViewModel.class);
+        if (savedInstanceState != null) {
+            moviesInstance = savedInstanceState.getParcelableArrayList(LIST_STATE);
+            savedRecyclerLayoutState = savedInstanceState.getParcelable(BUNDLE_RECYCLER_LAYOUT);
+            // get viewModel from ViewModelProviders class
+            viewModel = ViewModelProviders.of(this).get(MovieViewModel.class);
 
-        movieDatabase = MovieDatabase.getDatabase(this);
-        executor = new MovieExec();
-
-        initViews();
+            movieDatabase = MovieDatabase.getDatabase(this);
+            executor = new MovieExec();
+        } else {
+            initViews();
+        }
 
     }
+
+
 
     public Activity getActivity() {
         Context context = this;
@@ -82,8 +94,8 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         recyclerView = findViewById(R.id.recycler_view);
 
         movieList = new ArrayList<>();
-        adapter = new MoviesAdapter(this, movieList);
-
+//        adapter = new MoviesAdapter(this, movieList);
+        adapter = new MoviesAdapter(this, moviesInstance);
         if (getActivity().getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT){
             recyclerView.setLayoutManager(new GridLayoutManager(this, 2));
         } else {
@@ -92,6 +104,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
         recyclerView.setItemAnimator(new DefaultItemAnimator());
         recyclerView.setAdapter(adapter);
+        restoreLayoutManagerPosition();
         adapter.notifyDataSetChanged();
 
         swipeContainer = findViewById(R.id.main_activity);
@@ -106,6 +119,28 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
         checkSortOder();
 
+    }
+
+
+
+    private void restoreLayoutManagerPosition() {
+        if (savedRecyclerLayoutState != null) {
+            recyclerView.getLayoutManager().onRestoreInstanceState(savedRecyclerLayoutState);
+        }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        super.onSaveInstanceState(savedInstanceState);
+        savedInstanceState.putParcelableArrayList(LIST_STATE, moviesInstance);
+        savedInstanceState.putParcelable(BUNDLE_RECYCLER_LAYOUT, recyclerView.getLayoutManager().onSaveInstanceState());
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        moviesInstance = savedInstanceState.getParcelableArrayList(LIST_STATE);
+        savedRecyclerLayoutState = savedInstanceState.getParcelable(BUNDLE_RECYCLER_LAYOUT);
+        super.onRestoreInstanceState(savedInstanceState);
     }
 
     private void loadFavoritesMovies(){
@@ -144,6 +179,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
                 @Override
                 public void onResponse(retrofit2.Call<MoviesResponse> call, Response<MoviesResponse> response) {
                     List<Movie> movies = response.body().getResult();
+                    moviesInstance.addAll(movies);
                     recyclerView.setAdapter(new MoviesAdapter(getApplicationContext(), movies));
                     recyclerView.smoothScrollToPosition(0);
                     if (swipeContainer.isRefreshing()) {
@@ -192,6 +228,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
                 @Override
                 public void onResponse(retrofit2.Call<MoviesResponse> call, Response<MoviesResponse> response) {
                     List<Movie> movies = response.body().getResult();
+                    moviesInstance.addAll(movies);
                     recyclerView.setAdapter(new MoviesAdapter(getApplicationContext(), movies));
                     recyclerView.smoothScrollToPosition(0);
                     if (swipeContainer.isRefreshing()) {
@@ -242,11 +279,11 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     }
 
 
-    @Override
-    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
-        Log.d(LOG_TAG, "Preferences updated");
-        checkSortOder();
-    }
+//    @Override
+//    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
+//        Log.d(LOG_TAG, "Preferences updated");
+//        checkSortOder();
+//    }
 
     private void checkSortOder() {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
