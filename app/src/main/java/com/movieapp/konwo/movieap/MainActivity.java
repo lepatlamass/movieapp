@@ -22,12 +22,17 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.movieapp.konwo.movieap.adapter.MoviesAdapter;
+import com.movieapp.konwo.movieap.adapter.Tv_showsAdapter;
 import com.movieapp.konwo.movieap.api.Client;
 import com.movieapp.konwo.movieap.api.Service;
 import com.movieapp.konwo.movieap.data.MovieDatabase;
 import com.movieapp.konwo.movieap.data.MovieViewModel;
+import com.movieapp.konwo.movieap.data.Tv_showViewModel;
+import com.movieapp.konwo.movieap.data.Tv_showsDatabase;
 import com.movieapp.konwo.movieap.model.Movie;
 import com.movieapp.konwo.movieap.model.MoviesResponse;
+import com.movieapp.konwo.movieap.model.Tv_shows;
+import com.movieapp.konwo.movieap.model.Tv_showsResponses;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,17 +49,23 @@ public class MainActivity extends AppCompatActivity {
 
     ProgressDialog progressDialog;
     private RecyclerView recyclerView;
+    private Tv_showsAdapter tv_showsAdapter;
     private MoviesAdapter adapter;
     private List<Movie> movieList;
+    private List<Tv_shows> tvShows;
     private SwipeRefreshLayout swipeContainer;
     private AppCompatActivity activity = MainActivity.this;
 
     private Parcelable savedRecyclerLayoutState;
     private ArrayList<Movie> moviesInstance = new ArrayList<>();
+    private ArrayList<Tv_shows> tvShowsInstance = new ArrayList<>();
 
     private MovieDatabase movieDatabase;
+    private Tv_showsDatabase tv_showsDatabase;
     private MovieExec executor;
+    private TvShowExec tvShowExec;
     private MovieViewModel viewModel;
+    private Tv_showViewModel tv_showViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,17 +77,22 @@ public class MainActivity extends AppCompatActivity {
             savedRecyclerLayoutState = savedInstanceState.getParcelable(BUNDLE_RECYCLER_LAYOUT);
             showData();
         } else {
-            initViews();
+            loadMovies();
         }
 
         // get viewModel from ViewModelProviders class
         viewModel = ViewModelProviders.of(this).get(MovieViewModel.class);
+        tv_showViewModel  = ViewModelProviders.of(this).get(Tv_showViewModel.class);
 
         movieDatabase = MovieDatabase.getDatabase(this);
         executor = new MovieExec();
 
+        tv_showsDatabase = Tv_showsDatabase.getDatabase(this);
+        tvShowExec = new TvShowExec();
+
     }
 
+    //show movie datas
     private void showData() {
         recyclerView = findViewById(R.id.recycler_view);
 
@@ -93,7 +109,25 @@ public class MainActivity extends AppCompatActivity {
         adapter.notifyDataSetChanged();
     }
 
-    private void initViews() {
+    //show tvshow datas
+    private void showDataTvShow() {
+        recyclerView = findViewById(R.id.recycler_view);
+
+        tv_showsAdapter = new Tv_showsAdapter(this, tvShowsInstance);
+        if (getApplicationContext().getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT){
+            recyclerView.setLayoutManager(new GridLayoutManager(this, 2));
+        } else {
+            recyclerView.setLayoutManager(new GridLayoutManager(this, 4));
+        }
+
+        recyclerView.setItemAnimator(new DefaultItemAnimator());
+        recyclerView.setAdapter(tv_showsAdapter);
+        restoreLayoutManagerPosition();
+        tv_showsAdapter.notifyDataSetChanged();
+    }
+
+    //loading movies.
+    private void loadMovies() {
         recyclerView = findViewById(R.id.recycler_view);
 
         movieList = new ArrayList<>();
@@ -114,12 +148,44 @@ public class MainActivity extends AppCompatActivity {
         swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                initViews();
+                loadMovies();
                 Toast.makeText(MainActivity.this, "Movies Refreshed", Toast.LENGTH_SHORT).show();
             }
         });
 
         checkSortOder();
+
+    }
+
+    //loading tvshows.
+    private void loadTvShows() {
+        recyclerView = findViewById(R.id.recycler_view);
+
+        tvShows = new ArrayList<>();
+        tv_showsAdapter = new Tv_showsAdapter(this, tvShows);
+        if (getApplicationContext().getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT){
+            recyclerView.setLayoutManager(new GridLayoutManager(this, 2));
+        } else {
+            recyclerView.setLayoutManager(new GridLayoutManager(this, 4));
+        }
+
+        recyclerView.setItemAnimator(new DefaultItemAnimator());
+        recyclerView.setAdapter(tv_showsAdapter);
+        //restoreLayoutManagerPosition();
+        //adapter.notifyDataSetChanged();
+
+        swipeContainer = findViewById(R.id.main_activity);
+        swipeContainer.setColorSchemeColors(android.R.color.white);
+        swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                loadTvShows();
+                Toast.makeText(MainActivity.this, "Movies Refreshed", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        //checking sorting of things
+        checkSortOderTvShow();
 
     }
 
@@ -133,16 +199,19 @@ public class MainActivity extends AppCompatActivity {
     public void onSaveInstanceState(Bundle savedInstanceState) {
         super.onSaveInstanceState(savedInstanceState);
         savedInstanceState.putParcelableArrayList(LIST_STATE, moviesInstance);
+        savedInstanceState.putParcelableArrayList(LIST_STATE, tvShowsInstance);
         savedInstanceState.putParcelable(BUNDLE_RECYCLER_LAYOUT, recyclerView.getLayoutManager().onSaveInstanceState());
     }
 
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         moviesInstance = savedInstanceState.getParcelableArrayList(LIST_STATE);
+        tvShowsInstance = savedInstanceState.getParcelableArrayList(LIST_STATE);
         savedRecyclerLayoutState = savedInstanceState.getParcelable(BUNDLE_RECYCLER_LAYOUT);
         super.onRestoreInstanceState(savedInstanceState);
     }
 
+    //loadfavorite movies
     private void loadFavoritesMovies(){
         recyclerView = findViewById(R.id.recycler_view);
 
@@ -162,6 +231,27 @@ public class MainActivity extends AppCompatActivity {
         getAllFavorite();
     }
 
+    //loadfavorite tv shows
+    private void loadFavoritesTvShows(){
+        recyclerView = findViewById(R.id.recycler_view);
+
+        tvShows = new ArrayList<>();
+        tv_showsAdapter = new Tv_showsAdapter(this, tvShows);
+
+        if (getApplicationContext().getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+            recyclerView.setLayoutManager(new GridLayoutManager(this, 2));
+        } else {
+            recyclerView.setLayoutManager(new GridLayoutManager(this, 4));
+        }
+
+        recyclerView.setItemAnimator(new DefaultItemAnimator());
+        recyclerView.setAdapter(tv_showsAdapter);
+        tv_showsAdapter.notifyDataSetChanged();
+
+        getAllFavoriteTvshows();
+    }
+
+    //loading popular movies
     private void loadPopularMovies(){
 
         try{
@@ -200,6 +290,46 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    //loading popular tvshows
+    private void loadPopularTvShows(){
+
+        try{
+            if (BuildConfig.THE_MOVIE_DB_API_TOKEN.isEmpty()) {
+                Toast.makeText(getApplicationContext(), "Please obtaib API key fron themoviedb.org", Toast.LENGTH_SHORT).show();
+                progressDialog.dismiss();
+                return;
+            }
+
+            Client Client = new Client();
+            Service apiService = Client.getClient().create(Service.class);
+            retrofit2.Call<Tv_showsResponses> call = apiService.getPopularTvShows(BuildConfig.THE_MOVIE_DB_API_TOKEN);
+            call.enqueue(new Callback<Tv_showsResponses>(){
+
+                @Override
+                public void onResponse(retrofit2.Call<Tv_showsResponses> call, Response<Tv_showsResponses> response) {
+                    List<Tv_shows> tv_shows = response.body().getResult();
+                    tvShowsInstance.addAll(tv_shows);
+                    recyclerView.setAdapter(new Tv_showsAdapter(getApplicationContext(), tv_shows));
+                    recyclerView.smoothScrollToPosition(0);
+                    if (swipeContainer.isRefreshing()) {
+                        swipeContainer.setRefreshing(false);
+                    }
+                }
+
+                @Override
+                public void onFailure(retrofit2.Call<Tv_showsResponses> call, Throwable t) {
+                    Log.d("Error", t.getMessage());
+                    Toast.makeText(MainActivity.this, "Error Fetching Data!", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }catch (Exception e) {
+            Log.d("Error", e.getMessage());
+            Toast.makeText(this, e.toString(), Toast.LENGTH_SHORT).show();
+        }
+
+    }
+
+    //load top rated movies
     private void loadTopRatedMovies(){
 
         try{
@@ -238,6 +368,45 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    //load top rated movies
+    private void loadTopRatedTvShows(){
+
+        try{
+            if (BuildConfig.THE_MOVIE_DB_API_TOKEN.isEmpty()) {
+                Toast.makeText(getApplicationContext(), "Please obtaib API key fron themoviedb.org", Toast.LENGTH_SHORT).show();
+                progressDialog.dismiss();
+                return;
+            }
+
+            Client Client = new Client();
+            Service apiService = Client.getClient().create(Service.class);
+            retrofit2.Call<Tv_showsResponses> call = apiService.getTopRatedTvShows(BuildConfig.THE_MOVIE_DB_API_TOKEN);
+            call.enqueue(new Callback<Tv_showsResponses>(){
+
+                @Override
+                public void onResponse(retrofit2.Call<Tv_showsResponses> call, Response<Tv_showsResponses> response) {
+                    List<Tv_shows> tv_shows = response.body().getResult();
+                    tvShowsInstance.addAll(tv_shows);
+                    recyclerView.setAdapter(new Tv_showsAdapter(getApplicationContext(), tv_shows));
+                    recyclerView.smoothScrollToPosition(0);
+                    if (swipeContainer.isRefreshing()) {
+                        swipeContainer.setRefreshing(false);
+                    }
+                }
+
+                @Override
+                public void onFailure(retrofit2.Call<Tv_showsResponses> call, Throwable t) {
+                    Log.d("Error", t.getMessage());
+                    Toast.makeText(MainActivity.this, "Error Fetching Data!", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }catch (Exception e) {
+            Log.d("Error", e.getMessage());
+            Toast.makeText(this, e.toString(), Toast.LENGTH_SHORT).show();
+        }
+
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu){
         getMenuInflater().inflate(R.menu.menu_main, menu);
@@ -255,7 +424,7 @@ public class MainActivity extends AppCompatActivity {
                 return super.onOptionsItemSelected(item);
         }
     }
-
+//checkorder for movies
     private void checkSortOder() {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         String sortOrder = preferences.getString(
@@ -276,6 +445,27 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    //checkorder for movies
+    private void checkSortOderTvShow() {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        String sortOrder = preferences.getString(
+                this.getString(R.string.order_key),
+                this.getString(R.string.most_pop)
+        );
+        if (sortOrder.equals(this.getString(R.string.most_pop))){
+            Log.d(LOG_TAG,  "Sorting by most populsr");
+            loadPopularTvShows();
+        } else if
+        (sortOrder.equals(this.getString(R.string.favorite))){
+            Log.d(LOG_TAG, "Sorting by favorite");
+            loadFavoritesTvShows();
+        }
+        else {
+            Log.d(LOG_TAG, "Sorting by vote average");
+            loadTopRatedTvShows();
+        }
+    }
+
     @Override
     public void onResume() {
         super.onResume();
@@ -288,6 +478,17 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onChanged(@Nullable List<Movie> movies) {
                 recyclerView.setAdapter(new MoviesAdapter(getApplicationContext(), movies));
+            }
+        });
+    }
+
+    // load favorites by observing changes from the database
+    @SuppressLint("StaticFieldLeak")
+    private void getAllFavoriteTvshows() {
+        tv_showViewModel.getAllTv_shows().observe(this, new Observer<List<Tv_shows>>() {
+            @Override
+            public void onChanged(@Nullable List<Tv_shows> tv_shows) {
+                recyclerView.setAdapter(new Tv_showsAdapter(getApplicationContext(), tv_shows));
             }
         });
     }
