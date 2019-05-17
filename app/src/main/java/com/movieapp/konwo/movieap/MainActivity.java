@@ -19,6 +19,7 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 
 import com.movieapp.konwo.movieap.adapter.MoviesAdapter;
@@ -76,8 +77,9 @@ public class MainActivity extends AppCompatActivity {
             moviesInstance = savedInstanceState.getParcelableArrayList(LIST_STATE);
             savedRecyclerLayoutState = savedInstanceState.getParcelable(BUNDLE_RECYCLER_LAYOUT);
             showData();
+            showDataTvShow();
         } else {
-            loadMovies();
+            loadMovies(null);
         }
 
         // get viewModel from ViewModelProviders class
@@ -127,8 +129,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     //loading movies.
-    private void loadMovies() {
+    public void loadMovies(final View v) {
         recyclerView = findViewById(R.id.recycler_view);
+        findViewById(R.id.recycler_view2).setVisibility(View.GONE);
 
         movieList = new ArrayList<>();
         adapter = new MoviesAdapter(this, movieList);
@@ -148,7 +151,7 @@ public class MainActivity extends AppCompatActivity {
         swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                loadMovies();
+                loadMovies(v);
                 Toast.makeText(MainActivity.this, "Movies Refreshed", Toast.LENGTH_SHORT).show();
             }
         });
@@ -158,8 +161,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     //loading tvshows.
-    private void loadTvShows() {
-        recyclerView = findViewById(R.id.recycler_view);
+    public void loadTvShows(final View v) {
+        recyclerView = findViewById(R.id.recycler_view2);
+        findViewById(R.id.recycler_view).setVisibility(View.GONE);
+
 
         tvShows = new ArrayList<>();
         tv_showsAdapter = new Tv_showsAdapter(this, tvShows);
@@ -179,7 +184,7 @@ public class MainActivity extends AppCompatActivity {
         swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                loadTvShows();
+                loadTvShows(v);
                 Toast.makeText(MainActivity.this, "Movies Refreshed", Toast.LENGTH_SHORT).show();
             }
         });
